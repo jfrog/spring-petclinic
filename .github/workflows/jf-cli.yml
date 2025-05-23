@@ -9,7 +9,7 @@ permissions:
 env:
   JF_RT_URL: "https://${{vars.JF_NAME}}.jfrog.io"
   BUILD_NAME: "spring-petclinic"
-  BUILD_ID: "ga-${{github.run_number}}"
+  BUILD_ID: "ga-jf-${{github.run_number}}"
   JOB_SUMMARY: false
   JFROG_CLI_LOG_LEVEL: DEBUG # DEBUG, INFO, WARN, ERROR
   JAVA_PROVIDER: 'corretto'
@@ -413,7 +413,7 @@ jobs:
           VER_LINK: "${{env.JF_RT_URL}}/ui/artifactory/lifecycle/?bundleName='${{env.BUILD_NAME}}'&bundleToFlash='${{env.BUILD_NAME}}'&releaseBundleVersion='${{env.BUILD_ID}}'&repositoryKey=release-bundles-v2&activeVersionTab=Version%20Timeline&activeKanbanTab=promotion"
           CURL_URL: "${{env.JF_RT_URL}}/lifecycle/api/v2/promotion/records/${{env.BUILD_NAME}}/${{env.BUILD_ID}}?async=false"
         run: |
-          echo "#📦 Release Bundle v2 Summary :rocket: " >> $GITHUB_STEP_SUMMARY
+          echo "📦 Release Lifecycle Management (RLM): RBv2 Summary :rocket: " >> $GITHUB_STEP_SUMMARY
           echo " " >> $GITHUB_STEP_SUMMARY
           echo " " >> $GITHUB_STEP_SUMMARY
           echo "The Build Artifacts has elevated to the subsequent stages" >> $GITHUB_STEP_SUMMARY
@@ -451,7 +451,7 @@ jobs:
         id: setup-cli
         env:
           JF_URL: ${{env.JF_RT_URL}}
-          JFROG_CLI_LOG_LEVEL: ${{env.JFROG_CLI_LOG_LEVEL}}
+          JFROG_CLI_LOG_LEVEL: "ERROR"
         with:
           version: latest  #2.71.0
           oidc-provider-name: ${{vars.JF_OIDC_PROVIDER_NAME}}
@@ -476,9 +476,23 @@ jobs:
           pwd 
           ls -lR .
       - name: "Optional Saas Artifactory summary"
+        continue-on-error: true
+        env:
+          CURL_URL: "${{env.JF_RT_URL}}/lifecycle/api/v2/distribution/trackers/${{env.BUILD_NAME}}/${{env.BUILD_ID}}"
         run: |
-          echo "#📦 Download package from SaaS " >> $GITHUB_STEP_SUMMARY
-          echo "  - Download RBv2 from Artifactory [${{env.JF_RT_URL}}](${{env.JF_RT_URL}}) " >> $GITHUB_STEP_SUMMARY
+          echo "# :frog: Download package from SaaS 📦 " >> $GITHUB_STEP_SUMMARY
+          echo "  - Download RBv2 from Artifactory [${{env.JF_RT_URL}}](${{env.JF_RT_URL}}) to " >> $GITHUB_STEP_SUMMARY
+          RB2_DISTRIBUTE_RESP=$(curl -v -G ${{env.CURL_URL}} -H 'Content-Type:  application/json' -H "Authorization: Bearer ${{steps.setup-cli.outputs.oidc-token}}")
+          echo $RB2_DISTRIBUTE_RESP > RB2_DISTRIBUTE-${{env.BUILD_ID}}.json
+          cat RB2_DISTRIBUTE-${{env.BUILD_ID}}.json 
+          items=$(echo "$RB2_DISTRIBUTE_RESP" | jq -c -r '.targets[]')
+          for item in ${items[@]}; do
+            envVal=$(echo $item)
+            echo "   - ${envVal} " >> $GITHUB_STEP_SUMMARY
+          done
+          echo " " >> $GITHUB_STEP_SUMMARY
+          
+
           echo " " >> $GITHUB_STEP_SUMMARY
   
   sleepAfterDistribution:
@@ -494,7 +508,7 @@ jobs:
           sleep ${{env.SLEEP_TIME}}
           echo "Awake now!"
   
-  downloadFromSaasPsAzUse:
+  downloadRBv2FromSaasPsAzUse:
     name: "Download RBv2 from SaaS ${{vars.JF_NAME}} Artifactory"
     needs: saasDistribute
     runs-on: ubuntu-latest
@@ -508,7 +522,7 @@ jobs:
         id: setup-cli
         env:
           JF_URL: ${{env.JF_RT_URL}}
-          JFROG_CLI_LOG_LEVEL: ${{env.JFROG_CLI_LOG_LEVEL}}
+          JFROG_CLI_LOG_LEVEL: "ERROR"
         with:
           version: latest 
           oidc-provider-name: ${{vars.JF_OIDC_PROVIDER_NAME}}
@@ -529,11 +543,11 @@ jobs:
 
       - name: "Optional: Saas ${{vars.JF_RT_URL}} Artifactory summary"
         run: |
-          echo "# :frog:📦 Download package from SaaS " >> $GITHUB_STEP_SUMMARY
+          echo "# :frog: Download package from SaaS ${{vars.JF_URL}} 📦 " >> $GITHUB_STEP_SUMMARY
           echo "  - Download RBv2 from SaaS Artifactory [${{env.JF_URL}}](${{env.JF_URL}}) " >> $GITHUB_STEP_SUMMARY
           echo " " >> $GITHUB_STEP_SUMMARY
 
-  downloadFromSaasSolEng:
+  downloadRBv2FromSaasSolEng:
     name: "Download RBv2 from SaaS ${{vars.JF_NAME_2}} Artifactory"
     needs: sleepAfterDistribution
     runs-on: ubuntu-latest
@@ -549,7 +563,7 @@ jobs:
         id: setup-cli
         env:
           JF_URL: "${{env.JF_URL}}"
-          JFROG_CLI_LOG_LEVEL: ${{env.JFROG_CLI_LOG_LEVEL}}
+          JFROG_CLI_LOG_LEVEL: "ERROR"
         with:
           version: latest 
           oidc-provider-name: ${{vars.JF_OIDC_PROVIDER_NAME}}
@@ -570,11 +584,11 @@ jobs:
 
       - name: "Optional: Saas ${{vars.JF_NAME_2}} Artifactory summary"
         run: |
-          echo "# :frog:📦 Download package from SaaS " >> $GITHUB_STEP_SUMMARY
+          echo "# :frog: Download package from SaaS ${{vars.JF_URL}} 📦 " >> $GITHUB_STEP_SUMMARY
           echo "  - Download RBv2 from SaaS Artifactory [${{vars.JF_NAME_2}}](${{env.JF_URL}}) " >> $GITHUB_STEP_SUMMARY
           echo " " >> $GITHUB_STEP_SUMMARY        
 
-  downloadFromSaasEdge:
+  downloadRBv2FromSaasEdge:
     name: "Download RBv2 from SaaS ${{vars.JF_EDGE_NAME}} Edge"
     needs: sleepAfterDistribution
     runs-on: ubuntu-latest
@@ -590,7 +604,7 @@ jobs:
         id: setup-cli
         env:
           JF_URL: ${{env.JF_EDGE_URL}}
-          JFROG_CLI_LOG_LEVEL: ${{env.JFROG_CLI_LOG_LEVEL}}
+          JFROG_CLI_LOG_LEVEL: "ERROR"
         with:
           version: latest 
           oidc-provider-name: ${{vars.JF_OIDC_PROVIDER_NAME}}    
@@ -612,7 +626,7 @@ jobs:
 
       - name: "Optional: Saas ${{vars.JF_EDGE_NAME}} Edge summary"
         run: |
-          echo "# :frog:📦 Download package from SaaS " >> $GITHUB_STEP_SUMMARY
+          echo "# :frog: Download package from SaaS ${{vars.JF_EDGE_URL}} 📦 " >> $GITHUB_STEP_SUMMARY
           echo "  - Download RBv2 from Edge [${{vars.JF_EDGE_NAME}}](${{env.JF_EDGE_URL}}) " >> $GITHUB_STEP_SUMMARY
           echo " " >> $GITHUB_STEP_SUMMARY
   
@@ -818,8 +832,7 @@ jobs:
 
       - name: "Gradle: summary"
         run: |
-          jfcliv=`jf --version`
-          echo ":frog: Gradle: Summary :pushpin:" >> $GITHUB_STEP_SUMMARY
+          echo "# :frog: Gradle: Summary :pushpin:" >> $GITHUB_STEP_SUMMARY
           echo " " >> $GITHUB_STEP_SUMMARY
           echo " " >> $GITHUB_STEP_SUMMARY
           echo " - Installed JFrog CLI [${jfcliv}](https://jfrog.com/getcli/) and Java [${{env.JAVA_PROVIDER}}](https://github.com/actions/setup-java) v${{env.JAVA_VERSION}} " >> $GITHUB_STEP_SUMMARY
