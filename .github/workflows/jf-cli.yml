@@ -413,7 +413,7 @@ jobs:
           VER_LINK: "${{env.JF_RT_URL}}/ui/artifactory/lifecycle/?bundleName='${{env.BUILD_NAME}}'&bundleToFlash='${{env.BUILD_NAME}}'&releaseBundleVersion='${{env.BUILD_ID}}'&repositoryKey=release-bundles-v2&activeVersionTab=Version%20Timeline&activeKanbanTab=promotion"
           CURL_URL: "${{env.JF_RT_URL}}/lifecycle/api/v2/promotion/records/${{env.BUILD_NAME}}/${{env.BUILD_ID}}?async=false"
         run: |
-          echo "📦 Release Lifecycle Management (RLM): RBv2 Summary :rocket: " >> $GITHUB_STEP_SUMMARY
+          echo "# 📦 Release Lifecycle Management (RLM): RBv2 Summary :rocket: " >> $GITHUB_STEP_SUMMARY
           echo " " >> $GITHUB_STEP_SUMMARY
           echo " " >> $GITHUB_STEP_SUMMARY
           echo "The Build Artifacts has elevated to the subsequent stages" >> $GITHUB_STEP_SUMMARY
@@ -485,16 +485,13 @@ jobs:
           RB2_DISTRIBUTE_RESP=$(curl -v -G ${{env.CURL_URL}} -H 'Content-Type:  application/json' -H "Authorization: Bearer ${{steps.setup-cli.outputs.oidc-token}}")
           echo $RB2_DISTRIBUTE_RESP > RB2_DISTRIBUTE-${{env.BUILD_ID}}.json
           cat RB2_DISTRIBUTE-${{env.BUILD_ID}}.json 
-          items=$(echo "$RB2_DISTRIBUTE_RESP" | jq -c -r '.targets[]')
+          items=$(echo "$RB2_DISTRIBUTE_RESP" | jq -c -r '.[] .targets[]')
           for item in ${items[@]}; do
-            envVal=$(echo $item)
-            echo "   - ${envVal} " >> $GITHUB_STEP_SUMMARY
+            echo $item
+            echo "   - [${item}.jfrog.io](https://${item}.jfrog.io) " >> $GITHUB_STEP_SUMMARY
           done
           echo " " >> $GITHUB_STEP_SUMMARY
-          
 
-          echo " " >> $GITHUB_STEP_SUMMARY
-  
   sleepAfterDistribution:
     name: "SYNC Sleep few seconds"
     needs: saasDistribute
@@ -645,7 +642,7 @@ jobs:
       JAVA_VERSION: '17'
       RT_REPO_MVN_VIRTUAL: "springpetclinic-mvn-virtual"
       # RT_REPO_MVN_DEFAULT_LOCAL: "springpetclinic-mvn-snapshot-local"  # springpetclinic-mvn-dev-local, springpetclinic-mvn-qa-local, springpetclinic-mvn-prod-local
-      BUILD_ID: "ga-mvn-${{github.run_number}}" # ref: https://docs.github.com/en/actions/writing-workflows/choosing-what-your-workflow-does/accessing-contextual-information-about-workflow-runs#github-context
+      BUILD_ID: "ga-jf-mvn-${{github.run_number}}" # ref: https://docs.github.com/en/actions/writing-workflows/choosing-what-your-workflow-does/accessing-contextual-information-about-workflow-runs#github-context
     runs-on: ${{matrix.os}}
     timeout-minutes: 30   # ref  https://docs.github.com/en/actions/writing-workflows/workflow-syntax-for-github-actions#jobsjob_idtimeout-minutes
     defaults:
@@ -774,7 +771,7 @@ jobs:
       JAVA_VERSION: '17'
       RT_REPO_GRADLE_VIRTUAL: 'springpetclinic-gradle-virtual'
       RT_REPO_GRADLE_DEFAULT_LOCAL: 'springpetclinic-gradle-snapshot-fed-local'  # springpetclinic-gradle-dev-fed-local
-      BUILD_ID: "ga-gdl${{github.run_number}}" 
+      BUILD_ID: "ga-jf-gdl${{github.run_number}}" 
     runs-on: ${{matrix.os}}
     timeout-minutes: 20   # ref  https://docs.github.com/en/actions/writing-workflows/workflow-syntax-for-github-actions#jobsjob_idtimeout-minutes
     defaults:
