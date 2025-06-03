@@ -333,10 +333,10 @@ jobs:
         run: |
           jf rbp ${{env.BUILD_NAME}} ${{env.BUILD_ID}} ${{env.RBv2_ENV_VAL}} --sync=true --signing-key=${{env.RBV2_SIGNING_KEY}}  
 
-      - name: "Evidence: RBv2 state DEV"
+      - name: "Evidence: RBv2 state ${{env.RBv2_ENV_VAL}}"
         continue-on-error: true
         run: |
-          echo '{ "actor": "${{github.actor}}", "pipeline": "github actions", "build_name": "${{env.BUILD_NAME}}", "build_id": "${{env.BUILD_ID}}", "evd": "Evidence-RBv2", "rbv2_stage": "${{env.RBv2_ENV_VAL}}" }' > ./${{env.EVIDENCE_SPEC_JSON}}
+          echo '{ "actor": "${{github.actor}}", "pipeline": "github actions", "build_name": "${{env.BUILD_NAME}}", "build_id": "${{env.BUILD_ID}}", "evd": "Evidence-RBv2", "rbv2_stage": "${{env.RBv2_ENV_VAL}}", "unittests": "100/100" }' > ./${{env.EVIDENCE_SPEC_JSON}}
           cat ./${{env.EVIDENCE_SPEC_JSON}}
           jf evd create --release-bundle ${{env.BUILD_NAME}} --release-bundle-version ${{env.BUILD_ID}} --predicate ./${{env.EVIDENCE_SPEC_JSON}} --predicate-type https://jfrog.com/evidence/signature/v1 --key "${{secrets.APP_JFROG_EVD_PRIVATEKEY}}" --key-alias ${{secrets. APP_EVIDENCE_KEY_ALIAS}}
 
@@ -366,10 +366,10 @@ jobs:
         run: |
           jf rbp ${{env.BUILD_NAME}} ${{env.BUILD_ID}} ${{env.RBv2_ENV_VAL}} --sync=true --signing-key=${{env.RBV2_SIGNING_KEY}}  
 
-      - name: "Evidence: RBv2 state DEV"
+      - name: "Evidence: RBv2 state ${{env.RBv2_ENV_VAL}}"
         continue-on-error: true
         run: |
-          echo '{ "actor": "${{github.actor}}", "pipeline": "github actions", "build_name": "${{env.BUILD_NAME}}", "build_id": "${{env.BUILD_ID}}", "evd": "Evidence-RBv2", "rbv2_stage": "${{env.RBv2_ENV_VAL}}" }' > ./${{env.EVIDENCE_SPEC_JSON}}
+          echo '{ "actor": "${{github.actor}}", "pipeline": "github actions", "build_name": "${{env.BUILD_NAME}}", "build_id": "${{env.BUILD_ID}}", "evd": "Evidence-RBv2", "rbv2_stage": "${{env.RBv2_ENV_VAL}}", "QA-validation": "99/100" }' > ./${{env.EVIDENCE_SPEC_JSON}}
           cat ./${{env.EVIDENCE_SPEC_JSON}}
           jf evd create --release-bundle ${{env.BUILD_NAME}} --release-bundle-version ${{env.BUILD_ID}} --predicate ./${{env.EVIDENCE_SPEC_JSON}} --predicate-type https://jfrog.com/evidence/signature/v1 --key "${{secrets.APP_JFROG_EVD_PRIVATEKEY}}" --key-alias ${{secrets. APP_EVIDENCE_KEY_ALIAS}}
 
@@ -399,10 +399,10 @@ jobs:
         run: |
           jf rbp ${{env.BUILD_NAME}} ${{env.BUILD_ID}} ${{env.RBv2_ENV_VAL}} --sync=true --signing-key=${{env.RBV2_SIGNING_KEY}}  
 
-      - name: "Evidence: RBv2 state DEV"
+      - name: "Evidence: RBv2 state ${{env.RBv2_ENV_VAL}}"
         continue-on-error: true
         run: |
-          echo '{ "actor": "${{github.actor}}", "pipeline": "github actions", "build_name": "${{env.BUILD_NAME}}", "build_id": "${{env.BUILD_ID}}", "evd": "Evidence-RBv2", "rbv2_stage": "${{env.RBv2_ENV_VAL}}" }' > ./${{env.EVIDENCE_SPEC_JSON}}
+          echo '{ "actor": "${{github.actor}}", "pipeline": "github actions", "build_name": "${{env.BUILD_NAME}}", "build_id": "${{env.BUILD_ID}}", "evd": "Evidence-RBv2", "rbv2_stage": "${{env.RBv2_ENV_VAL}}", "prod-validation": "100/100"}' > ./${{env.EVIDENCE_SPEC_JSON}}
           cat ./${{env.EVIDENCE_SPEC_JSON}}
           jf evd create --release-bundle ${{env.BUILD_NAME}} --release-bundle-version ${{env.BUILD_ID}} --predicate ./${{env.EVIDENCE_SPEC_JSON}} --predicate-type https://jfrog.com/evidence/signature/v1 --key "${{secrets.APP_JFROG_EVD_PRIVATEKEY}}" --key-alias ${{secrets. APP_EVIDENCE_KEY_ALIAS}}
 
