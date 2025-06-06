@@ -16,7 +16,7 @@ env:
   JAVA_VERSION: '17'
   EVIDENCE_SPEC_JSON: 'evd-spec-info.json'  # ref https://jfrog.com/help/r/jfrog-artifactory-documentation/evidence-setup
   RBv2_SPEC_JSON: "rbv2-spec-info.json"
-  RBV2_SIGNING_KEY: "${{secrets.RBV2_SIGNING_KEY}}" # ref https://jfrog.com/help/r/jfrog-artifactory-documentation/create-signing-keys-for-release-bundles-v2
+  #RBV2_SIGNING_KEY: "${{secrets.RBV2_SIGNING_KEY}}" # ref https://jfrog.com/help/r/jfrog-artifactory-documentation/create-signing-keys-for-release-bundles-v2
   DEFAULT_WORKSPACE: "${{github.workspace}}"  # /home/runner/work/spring-petclinic/spring-petclinic
 jobs:
   dockerPackage:
@@ -288,12 +288,14 @@ jobs:
       # Release Bundle v2
       - name: "RLM: RBv2 spec - create"
         run: |
-          echo "{ \"files\": [ {\"build\": \"${{env.BUILD_NAME}}/${{env.BUILD_ID}}\" } ] }"  > ${{env.RBv2_SPEC_JSON}}
-          cat ${{env.RBv2_SPEC_JSON}}
+          echo "{ \"files\": [ {\"build\": \"${{env.BUILD_NAME}}/${{env.BUILD_ID}}\", \"includeDeps\":\"true\"} ] }"  > ${{env.RBv2_SPEC_JSON}}
 
       - name: "RLM: RBv2 Create NEW"
         run: |
-          jf rbc ${{env.BUILD_NAME}} ${{env.BUILD_ID}} --sync=true --signing-key=${{env.RBV2_SIGNING_KEY}} --spec=${{env.RBv2_SPEC_JSON}}
+          cat ${{env.RBv2_SPEC_JSON}}
+          jf rbc ${{env.BUILD_NAME}} ${{env.BUILD_ID}} --sync=true --signing-key=${{secrets.RBV2_SIGNING_KEY}} --spec=${{env.RBv2_SPEC_JSON}}
+
+         
 
       # Evidence - RBv2 new references
       #     Docs# https://jfrog.com/help/r/jfrog-artifactory-documentation/evidence-management
@@ -334,7 +336,7 @@ jobs:
 
       - name: "RLM: RBv2 promote ${{env.RBv2_ENV_VAL}}"
         run: |
-          jf rbp ${{env.BUILD_NAME}} ${{env.BUILD_ID}} ${{env.RBv2_ENV_VAL}} --sync=true --signing-key=${{env.RBV2_SIGNING_KEY}}  
+          jf rbp ${{env.BUILD_NAME}} ${{env.BUILD_ID}} ${{env.RBv2_ENV_VAL}} --sync=true --signing-key=${{secrets.RBV2_SIGNING_KEY}}  
 
       - name: "Evidence: RBv2 state ${{env.RBv2_ENV_VAL}}"
         continue-on-error: true
@@ -367,7 +369,7 @@ jobs:
   
       - name: "RLM: RBv2 promote ${{env.RBv2_ENV_VAL}}"
         run: |
-          jf rbp ${{env.BUILD_NAME}} ${{env.BUILD_ID}} ${{env.RBv2_ENV_VAL}} --sync=true --signing-key=${{env.RBV2_SIGNING_KEY}}  
+          jf rbp ${{env.BUILD_NAME}} ${{env.BUILD_ID}} ${{env.RBv2_ENV_VAL}} --sync=true --signing-key=${{secrets.RBV2_SIGNING_KEY}}  
 
       - name: "Evidence: RBv2 state ${{env.RBv2_ENV_VAL}}"
         continue-on-error: true
@@ -400,7 +402,7 @@ jobs:
 
       - name: "RLM: RBv2 promote ${{env.RBv2_ENV_VAL}}"
         run: |
-          jf rbp ${{env.BUILD_NAME}} ${{env.BUILD_ID}} ${{env.RBv2_ENV_VAL}} --sync=true --signing-key=${{env.RBV2_SIGNING_KEY}}  
+          jf rbp ${{env.BUILD_NAME}} ${{env.BUILD_ID}} ${{env.RBv2_ENV_VAL}} --sync=true --signing-key=${{secrets.RBV2_SIGNING_KEY}}  
 
       - name: "Evidence: RBv2 state ${{env.RBv2_ENV_VAL}}"
         continue-on-error: true
@@ -807,12 +809,12 @@ jobs:
       # Release Bundle v2
       - name: "RLM: RBv2 spec - create"
         run: |
-          echo "{ \"files\": [ {\"build\": \"${{env.BUILD_NAME}}/${{env.BUILD_ID}}\" } ] }"  > ${{env.RBv2_SPEC_JSON}}
-          cat ${{env.RBv2_SPEC_JSON}}
+          echo "{ \"files\": [ {\"build\": \"${{env.BUILD_NAME}}/${{env.BUILD_ID}}\", \"includeDeps\":\"true\"} ] }"  > ${{env.RBv2_SPEC_JSON}}
 
       - name: "RLM: RBv2 Create NEW"
         run: |
-          jf rbc ${{env.BUILD_NAME}} ${{env.BUILD_ID}} --sync=true --signing-key=${{env.RBV2_SIGNING_KEY}} --spec=${{env.RBv2_SPEC_JSON}}
+          cat ${{env.RBv2_SPEC_JSON}}
+          jf rbc ${{env.BUILD_NAME}} ${{env.BUILD_ID}} --sync=true --signing-key=${{secrets.RBV2_SIGNING_KEY}} --spec=${{env.RBv2_SPEC_JSON}}
 
       - name: "Evidence: RBv2 state NEW"
         continue-on-error: true 
@@ -848,7 +850,7 @@ jobs:
 
       - name: "RLM: RBv2 promote ${{env.RBv2_ENV_VAL}}"
         run: |
-          jf rbp ${{env.BUILD_NAME}} ${{env.BUILD_ID}} ${{env.RBv2_ENV_VAL}} --sync=true --signing-key=${{env.RBV2_SIGNING_KEY}}  
+          jf rbp ${{env.BUILD_NAME}} ${{env.BUILD_ID}} ${{env.RBv2_ENV_VAL}} --sync=true --signing-key=${{secrets.RBV2_SIGNING_KEY}}  
 
       - name: "Evidence: RBv2 state ${{env.RBv2_ENV_VAL}}"
         continue-on-error: true
@@ -881,7 +883,7 @@ jobs:
   
       - name: "RLM: RBv2 promote ${{env.RBv2_ENV_VAL}}"
         run: |
-          jf rbp ${{env.BUILD_NAME}} ${{env.BUILD_ID}} ${{env.RBv2_ENV_VAL}} --sync=true --signing-key=${{env.RBV2_SIGNING_KEY}}  
+          jf rbp ${{env.BUILD_NAME}} ${{env.BUILD_ID}} ${{env.RBv2_ENV_VAL}} --sync=true --signing-key=${{secrets.RBV2_SIGNING_KEY}}  
 
       - name: "Evidence: RBv2 state ${{env.RBv2_ENV_VAL}}"
         continue-on-error: true
@@ -914,7 +916,7 @@ jobs:
 
       - name: "RLM: RBv2 promote ${{env.RBv2_ENV_VAL}}"
         run: |
-          jf rbp ${{env.BUILD_NAME}} ${{env.BUILD_ID}} ${{env.RBv2_ENV_VAL}} --sync=true --signing-key=${{env.RBV2_SIGNING_KEY}}  
+          jf rbp ${{env.BUILD_NAME}} ${{env.BUILD_ID}} ${{env.RBv2_ENV_VAL}} --sync=true --signing-key=${{secrets.RBV2_SIGNING_KEY}}  
 
       - name: "Evidence: RBv2 state ${{env.RBv2_ENV_VAL}}"
         continue-on-error: true
