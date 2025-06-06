@@ -4,7 +4,8 @@
 FROM psazuse.jfrog.io/springpetclinic-docker-virtual/amazoncorretto:17-alpine-jdk
 
 # Set environment variables ref: https://docs.docker.com/build/building/variables/#env-usage-example
-ENV JAR_FILE=spring-petclinic-3.4.0-SNAPSHOT.jar
+ARG JAR_FILE
+# ENV JAR_FILE=spring-petclinic-3.5.0-SNAPSHOT.jar
 
 WORKDIR /app
 

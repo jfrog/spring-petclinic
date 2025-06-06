@@ -9,6 +9,7 @@ permissions:
 env:
   JF_RT_URL: "https://${{vars.JF_NAME}}.jfrog.io"
   BUILD_NAME: "spring-petclinic"
+  JAR_VERSION: "3.5.0-SNAPSHOT" # spring-petclinic-3.5.0-SNAPSHOT.jar
   JOB_SUMMARY: false
   JFROG_CLI_LOG_LEVEL: DEBUG # DEBUG, INFO, WARN, ERROR
   JAVA_PROVIDER: 'corretto'
@@ -161,8 +162,10 @@ jobs:
           jf scan . --format=table --extended-table=true --threads=100 --fail=false
 
       - name: "Package: Docker build and push"
+        env:
+          JAR_FILE: "${{env.BUILD_NAME}}-${{env.JAR_VERSION}}.jar"  # spring-petclinic-3.5.0-SNAPSHOT.jar
         run: |
-          docker image build -f jfrog/Dockerfile -t ${{env.RT_REPO_DOCKER_URL}} --platform "${{env.DOCKER_BUILDX_PLATFORMS}}" --metadata-file "${{env.DOCKER_METADATA_JSON}}" --push .
+          docker image build -f jfrog/Dockerfile --build-arg JAR_FILE=${{env.JAR_FILE}} -t ${{env.RT_REPO_DOCKER_URL}} --platform "${{env.DOCKER_BUILDX_PLATFORMS}}" --metadata-file "${{env.DOCKER_METADATA_JSON}}" --push .
 
       - name: "Optional: Docker pull image"
         run: |
