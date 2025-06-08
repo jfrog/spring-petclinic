@@ -705,9 +705,6 @@ jobs:
 
       - name: "Config jf with mvn repos"
         run: |
-          export JFROG_CLI_LOG_LEVEL=${{env.JFROG_CLI_LOG_LEVEL}}
-          export JFROG_CLI_LOG_TIMESTAMP=DATE_AND_TIME
-
           jf mvnc --global --repo-resolve-releases ${{env.RT_REPO_MVN_VIRTUAL}} --repo-resolve-snapshots ${{env.RT_REPO_MVN_VIRTUAL}}
 
       - name: "list folder"
@@ -777,8 +774,8 @@ jobs:
         env: 
           BUILD_INFO_JSON: "BuildInfo-${{env.BUILD_ID}}.json"
         run: |
-           jf rt curl "/api/build/${{env.BUILD_NAME}}/${{env.BUILD_ID}}" -o $BUILD_INFO_JSON
-           cat $BUILD_INFO_JSON
+           jf rt curl "/api/build/${{env.BUILD_NAME}}/${{env.BUILD_ID}}" -o ${{env.BUILD_INFO_JSON}}
+           cat ${{env.BUILD_INFO_JSON}}
 
       - name: "Sleep for few seconds"
         env: 
@@ -804,16 +801,17 @@ jobs:
 
       - name: "Optional: Build Scan V2" 
         run: |
-          jf xr curl /api/v2/ci/build -H 'Content-Type: application/json' -d '{"build_name": "${{env.BUILD_NAME}}", "build_number": "${{env.BUILD_ID}}","rescan":false  }'
+          jf xr curl /api/v2/ci/build -H 'Content-Type: application/json' -d '{"build_name": "${{env.BUILD_NAME}}", "build_number": "${{env.BUILD_ID}}","rescan":false }'
 
       # Release Bundle v2
       - name: "RLM: RBv2 spec - create"
         run: |
-          echo "{ \"files\": [ {\"build\": \"${{env.BUILD_NAME}}/${{env.BUILD_ID}}\", \"includeDeps\":\"true\"} ] }"  > ${{env.RBv2_SPEC_JSON}}
+          echo "{ \"files\": [ {\"build\": \"${{env.BUILD_NAME}}/${{env.BUILD_ID}}\", \"includeDeps\":\"false\"} ] }"  > ${{env.RBv2_SPEC_JSON}}
 
       - name: "RLM: RBv2 Create NEW"
         run: |
           cat ${{env.RBv2_SPEC_JSON}}
+
           jf rbc ${{env.BUILD_NAME}} ${{env.BUILD_ID}} --sync=true --signing-key=${{secrets.RBV2_SIGNING_KEY}} --spec=${{env.RBv2_SPEC_JSON}}
 
       - name: "Evidence: RBv2 state NEW"
@@ -821,10 +819,11 @@ jobs:
         env:
           VER_LINK: "${{env.JF_RT_URL}}/ui/artifactory/lifecycle/?bundleName='${{env.BUILD_NAME}}'&bundleToFlash='${{env.BUILD_NAME}}'&releaseBundleVersion='${{env.BUILD_ID}}'&repositoryKey=release-bundles-v2&activeVersionTab=Version%20Timeline&activeKanbanTab=promotion"
         run: |
-          echo '{ "actor": "${{github.actor}}", "pipeline": "github actions", "build_name": "${{env.BUILD_NAME}}", "build_id": "${{env.BUILD_ID}}", "evd": "Evidence-RBv2", "rbv2_stage": "NEW" }' > ./${{env.EVIDENCE_SPEC_JSON}}
-          cat ./${{env.EVIDENCE_SPEC_JSON}}
+          echo '{ "actor": "${{github.actor}}", "pipeline": "github actions", "build_name": "${{env.BUILD_NAME}}", "build_id": "${{env.BUILD_ID}}", "evd": "Evidence-RBv2", "rbv2_stage": "NEW" }' > ${{env.EVIDENCE_SPEC_JSON}}
+          cat ${{env.EVIDENCE_SPEC_JSON}}
+
           jf evd create --release-bundle ${{env.BUILD_NAME}} --release-bundle-version ${{env.BUILD_ID}} --predicate ./${{env.EVIDENCE_SPEC_JSON}} --predicate-type https://jfrog.com/evidence/signature/v1 --key "${{secrets.APP_JFROG_EVD_PRIVATEKEY}}" --key-alias ${{secrets. APP_EVIDENCE_KEY_ALIAS}}
-          #echo "    - Evidence for RBv2 attached at [${{env.BUILD_NAME}}](${{env.VER_LINK}}) " >> $GITHUB_STEP_SUMMARY
+          
 
   mvnRBv2PromoteDev:
     name: "MVN: RBv2 Promote DEV"
