@@ -18,8 +18,6 @@ env:
   RBv2_SPEC_JSON: "rbv2-spec-info.json"
   #RBV2_SIGNING_KEY: "${{secrets.RBV2_SIGNING_KEY}}" # ref https://jfrog.com/help/r/jfrog-artifactory-documentation/create-signing-keys-for-release-bundles-v2
   DEFAULT_WORKSPACE: "${{github.workspace}}"  # /home/runner/work/spring-petclinic/spring-petclinic
-  RT_REPO_MVN_VIRTUAL: "springpetclinic-mvn-virtual"
-  RT_REPO_DOCKER_VIRTUAL: "springpetclinic-docker-virtual"
 jobs:
   dockerPackage:
     name: "Docker"
@@ -33,8 +31,13 @@ jobs:
             build-mode: none 
     env:  
       BUILD_ID: "ga-jf-dkr-${{github.run_number}}"
+      RT_REPO_MVN_VIRTUAL: "springpetclinic-mvn-virtual"
       # RT_REPO_MVN_DEFAULT_LOCAL: "springpetclinic-mvn-snapshot-local"  # springpetclinic-mvn-dev-local, springpetclinic-mvn-qa-local, springpetclinic-mvn-prod-local
-      # RT_REPO_DOCKER_DEFAULT_LOCAL: "springpetclinic-docker-snapshot-local"  # springpetclinic-docker-dev-local, springpetclinic-docker-qa-local, springpetclinic-docker-prod-local
+      RT_REPO_DOCKER_VIRTUAL: "springpetclinic-docker-virtual"
+      RT_REPO_DOCKER_DEFAULT_LOCAL: "springpetclinic-docker-snapshot-local"  # springpetclinic-docker-dev-local, springpetclinic-docker-qa-local, springpetclinic-docker-prod-local
+      RT_REPO_DEV_LOCAL: "springpetclinic-docker-dev-local"
+      RT_REPO_QA_LOCAL: s"pringpetclinic-docker-qa-local"
+      RT_REPO_PROD_LOCAL: "springpetclinic-docker-prod-local"
       DOCKER_BUILDX_PLATFORMS: 'linux/amd64,linux/arm64'
       DOCKER_METADATA_JSON: 'build-metadata.json'
     defaults:
@@ -317,6 +320,7 @@ jobs:
     env:
       RBv2_ENV_VAL: "DEV"
       BUILD_ID: "ga-jf-dkr-${{github.run_number}}"
+      RT_REPO_DEV_LOCAL: "springpetclinic-docker-dev-local"
     defaults:
        run:
          working-directory: "${{env.DEFAULT_WORKSPACE}}"
@@ -334,7 +338,7 @@ jobs:
 
       - name: "RLM: RBv2 promote ${{env.RBv2_ENV_VAL}}"
         run: |
-          jf rbp ${{env.BUILD_NAME}} ${{env.BUILD_ID}} ${{env.RBv2_ENV_VAL}} --include-repos=${{env.RT_REPO_DOCKER_VIRTUAL}} --sync=true --signing-key=${{secrets.RBV2_SIGNING_KEY}}  
+          jf rbp ${{env.BUILD_NAME}} ${{env.BUILD_ID}} ${{env.RBv2_ENV_VAL}} --include-repos=${{env.RT_REPO_DEV_LOCAL}} --sync=true --signing-key=${{secrets.RBV2_SIGNING_KEY}}  
 
       - name: "Evidence: RBv2 state ${{env.RBv2_ENV_VAL}}"
         continue-on-error: true
@@ -350,6 +354,7 @@ jobs:
     env:
       RBv2_ENV_VAL: "QA"
       BUILD_ID: "ga-jf-dkr-${{github.run_number}}"
+      RT_REPO_QA_LOCAL: "springpetclinic-docker-qa-local"
     defaults:
        run:
          working-directory: "${{env.DEFAULT_WORKSPACE}}"
@@ -367,7 +372,7 @@ jobs:
   
       - name: "RLM: RBv2 promote ${{env.RBv2_ENV_VAL}}"
         run: |
-          jf rbp ${{env.BUILD_NAME}} ${{env.BUILD_ID}} ${{env.RBv2_ENV_VAL}} --include-repos=${{env.RT_REPO_DOCKER_VIRTUAL}} --sync=true --signing-key=${{secrets.RBV2_SIGNING_KEY}}  
+          jf rbp ${{env.BUILD_NAME}} ${{env.BUILD_ID}} ${{env.RBv2_ENV_VAL}} --include-repos=${{env.RT_REPO_QA_LOCAL}} --sync=true --signing-key=${{secrets.RBV2_SIGNING_KEY}}  
 
       - name: "Evidence: RBv2 state ${{env.RBv2_ENV_VAL}}"
         continue-on-error: true
@@ -383,6 +388,7 @@ jobs:
     env:
       RBv2_ENV_VAL: "PROD"
       BUILD_ID: "ga-jf-dkr-${{github.run_number}}"
+      RT_REPO_PROD_LOCAL: "springpetclinic-docker-prod-local"
     defaults:
        run:
          working-directory: "${{env.DEFAULT_WORKSPACE}}"
@@ -400,7 +406,7 @@ jobs:
 
       - name: "RLM: RBv2 promote ${{env.RBv2_ENV_VAL}}"
         run: |
-          jf rbp ${{env.BUILD_NAME}} ${{env.BUILD_ID}} ${{env.RBv2_ENV_VAL}} --include-repos=${{env.RT_REPO_DOCKER_VIRTUAL}} --sync=true --signing-key=${{secrets.RBV2_SIGNING_KEY}}  
+          jf rbp ${{env.BUILD_NAME}} ${{env.BUILD_ID}} ${{env.RBv2_ENV_VAL}} --include-repos=${{env.RT_REPO_PROD_LOCAL}} --sync=true --signing-key=${{secrets.RBV2_SIGNING_KEY}}  
 
       - name: "Evidence: RBv2 state ${{env.RBv2_ENV_VAL}}"
         continue-on-error: true
@@ -650,8 +656,12 @@ jobs:
       BUILD_ID: "ga-jf-mvn-${{github.run_number}}"
       JAVA_PROVIDER: 'corretto'
       JAVA_VERSION: '17'
-      # RT_REPO_MVN_VIRTUAL: "springpetclinic-mvn-virtual"  
-      # RT_REPO_MVN_DEFAULT_LOCAL: "springpetclinic-mvn-snapshot-local"  # springpetclinic-mvn-dev-local, springpetclinic-mvn-qa-local, springpetclinic-mvn-prod-local
+      RT_REPO_MVN_VIRTUAL: "springpetclinic-mvn-virtual"  
+      RT_REPO_MVN_DEFAULT_LOCAL: "springpetclinic-mvn-snapshot-local"  # springpetclinic-mvn-dev-local, springpetclinic-mvn-qa-local, springpetclinic-mvn-prod-local
+      RT_REPO_DEV_LOCAL: "springpetclinic-mvn-dev-local"
+      RT_REPO_QA_LOCAL: "springpetclinic-mvn-qa-local"
+      RT_REPO_PROD_LOCAL: "springpetclinic-mvn-prod-local"
+
     runs-on: ${{matrix.os}}
     timeout-minutes: 30   # ref  https://docs.github.com/en/actions/writing-workflows/workflow-syntax-for-github-actions#jobsjob_idtimeout-minutes
     defaults:
@@ -830,6 +840,7 @@ jobs:
     env:
       RBv2_ENV_VAL: "DEV"
       BUILD_ID: "ga-jf-mvn-${{github.run_number}}"
+      RT_REPO_DEV_LOCAL: "springpetclinic-mvn-dev-local"
     defaults:
         run:
           working-directory: "${{env.DEFAULT_WORKSPACE}}"
@@ -847,7 +858,7 @@ jobs:
 
       - name: "RLM: RBv2 promote ${{env.RBv2_ENV_VAL}}"
         run: |
-          jf rbp ${{env.BUILD_NAME}} ${{env.BUILD_ID}} ${{env.RBv2_ENV_VAL}} --include-repos=${{env.RT_REPO_MVN_VIRTUAL}} --sync=true --signing-key=${{secrets.RBV2_SIGNING_KEY}}  
+          jf rbp ${{env.BUILD_NAME}} ${{env.BUILD_ID}} ${{env.RBv2_ENV_VAL}} --include-repos=${{env.RT_REPO_DEV_LOCAL}} --sync=true --signing-key=${{secrets.RBV2_SIGNING_KEY}}  
 
       - name: "Evidence: RBv2 state ${{env.RBv2_ENV_VAL}}"
         continue-on-error: true
@@ -863,6 +874,7 @@ jobs:
     env:
       RBv2_ENV_VAL: "QA"
       BUILD_ID: "ga-jf-mvn-${{github.run_number}}"
+      RT_REPO_QA_LOCAL: "springpetclinic-mvn-qa-local"
     defaults:
         run:
           working-directory: "${{env.DEFAULT_WORKSPACE}}"
@@ -880,7 +892,7 @@ jobs:
   
       - name: "RLM: RBv2 promote ${{env.RBv2_ENV_VAL}}"
         run: |
-          jf rbp ${{env.BUILD_NAME}} ${{env.BUILD_ID}} ${{env.RBv2_ENV_VAL}} --include-repos=${{env.RT_REPO_MVN_VIRTUAL}} --sync=true --signing-key=${{secrets.RBV2_SIGNING_KEY}}  
+          jf rbp ${{env.BUILD_NAME}} ${{env.BUILD_ID}} ${{env.RBv2_ENV_VAL}} --include-repos=${{env.RT_REPO_QA_LOCAL}} --sync=true --signing-key=${{secrets.RBV2_SIGNING_KEY}}  
 
       - name: "Evidence: RBv2 state ${{env.RBv2_ENV_VAL}}"
         continue-on-error: true
@@ -896,6 +908,7 @@ jobs:
     env:
       RBv2_ENV_VAL: "PROD"
       BUILD_ID: "ga-jf-mvn-${{github.run_number}}"
+      RT_REPO_PROD_LOCAL: "springpetclinic-mvn-prod-local"
     defaults:
         run:
           working-directory: "${{env.DEFAULT_WORKSPACE}}"
@@ -913,7 +926,7 @@ jobs:
 
       - name: "RLM: RBv2 promote ${{env.RBv2_ENV_VAL}}"
         run: |
-          jf rbp ${{env.BUILD_NAME}} ${{env.BUILD_ID}} ${{env.RBv2_ENV_VAL}} --include-repos=${{env.RT_REPO_MVN_VIRTUAL}} --sync=true --signing-key=${{secrets.RBV2_SIGNING_KEY}}  
+          jf rbp ${{env.BUILD_NAME}} ${{env.BUILD_ID}} ${{env.RBv2_ENV_VAL}} --include-repos=${{env.RT_REPO_PROD_LOCAL}} --sync=true --signing-key=${{secrets.RBV2_SIGNING_KEY}}  
 
       - name: "Evidence: RBv2 state ${{env.RBv2_ENV_VAL}}"
         continue-on-error: true
