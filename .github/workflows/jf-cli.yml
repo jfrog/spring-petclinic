@@ -18,6 +18,8 @@ env:
   RBv2_SPEC_JSON: "rbv2-spec-info.json"
   #RBV2_SIGNING_KEY: "${{secrets.RBV2_SIGNING_KEY}}" # ref https://jfrog.com/help/r/jfrog-artifactory-documentation/create-signing-keys-for-release-bundles-v2
   DEFAULT_WORKSPACE: "${{github.workspace}}"  # /home/runner/work/spring-petclinic/spring-petclinic
+  RT_REPO_MVN_VIRTUAL: "springpetclinic-mvn-virtual"
+  RT_REPO_DOCKER_VIRTUAL: "springpetclinic-docker-virtual"
 jobs:
   dockerPackage:
     name: "Docker"
@@ -31,9 +33,7 @@ jobs:
             build-mode: none 
     env:  
       BUILD_ID: "ga-jf-dkr-${{github.run_number}}"
-      RT_REPO_MVN_VIRTUAL: "springpetclinic-mvn-virtual"
       # RT_REPO_MVN_DEFAULT_LOCAL: "springpetclinic-mvn-snapshot-local"  # springpetclinic-mvn-dev-local, springpetclinic-mvn-qa-local, springpetclinic-mvn-prod-local
-      RT_REPO_DOCKER_VIRTUAL: "springpetclinic-docker-virtual"
       # RT_REPO_DOCKER_DEFAULT_LOCAL: "springpetclinic-docker-snapshot-local"  # springpetclinic-docker-dev-local, springpetclinic-docker-qa-local, springpetclinic-docker-prod-local
       DOCKER_BUILDX_PLATFORMS: 'linux/amd64,linux/arm64'
       DOCKER_METADATA_JSON: 'build-metadata.json'
@@ -295,8 +295,6 @@ jobs:
           cat ${{env.RBv2_SPEC_JSON}}
           jf rbc ${{env.BUILD_NAME}} ${{env.BUILD_ID}} --sync=true --signing-key=${{secrets.RBV2_SIGNING_KEY}} --spec=${{env.RBv2_SPEC_JSON}}
 
-         
-
       # Evidence - RBv2 new references
       #     Docs# https://jfrog.com/help/r/jfrog-artifactory-documentation/evidence-management
       #     CLI# https://docs.jfrog-applications.jfrog.io/jfrog-applications/jfrog-cli/binaries-management-with-jfrog-artifactory/evidence-service
@@ -336,7 +334,7 @@ jobs:
 
       - name: "RLM: RBv2 promote ${{env.RBv2_ENV_VAL}}"
         run: |
-          jf rbp ${{env.BUILD_NAME}} ${{env.BUILD_ID}} ${{env.RBv2_ENV_VAL}} --sync=true --signing-key=${{secrets.RBV2_SIGNING_KEY}}  
+          jf rbp ${{env.BUILD_NAME}} ${{env.BUILD_ID}} ${{env.RBv2_ENV_VAL}} --include-repos=${{env.RT_REPO_DOCKER_VIRTUAL}} --sync=true --signing-key=${{secrets.RBV2_SIGNING_KEY}}  
 
       - name: "Evidence: RBv2 state ${{env.RBv2_ENV_VAL}}"
         continue-on-error: true
@@ -369,7 +367,7 @@ jobs:
   
       - name: "RLM: RBv2 promote ${{env.RBv2_ENV_VAL}}"
         run: |
-          jf rbp ${{env.BUILD_NAME}} ${{env.BUILD_ID}} ${{env.RBv2_ENV_VAL}} --sync=true --signing-key=${{secrets.RBV2_SIGNING_KEY}}  
+          jf rbp ${{env.BUILD_NAME}} ${{env.BUILD_ID}} ${{env.RBv2_ENV_VAL}} --include-repos=${{env.RT_REPO_DOCKER_VIRTUAL}} --sync=true --signing-key=${{secrets.RBV2_SIGNING_KEY}}  
 
       - name: "Evidence: RBv2 state ${{env.RBv2_ENV_VAL}}"
         continue-on-error: true
@@ -402,7 +400,7 @@ jobs:
 
       - name: "RLM: RBv2 promote ${{env.RBv2_ENV_VAL}}"
         run: |
-          jf rbp ${{env.BUILD_NAME}} ${{env.BUILD_ID}} ${{env.RBv2_ENV_VAL}} --sync=true --signing-key=${{secrets.RBV2_SIGNING_KEY}}  
+          jf rbp ${{env.BUILD_NAME}} ${{env.BUILD_ID}} ${{env.RBv2_ENV_VAL}} --include-repos=${{env.RT_REPO_DOCKER_VIRTUAL}} --sync=true --signing-key=${{secrets.RBV2_SIGNING_KEY}}  
 
       - name: "Evidence: RBv2 state ${{env.RBv2_ENV_VAL}}"
         continue-on-error: true
@@ -652,7 +650,7 @@ jobs:
       BUILD_ID: "ga-jf-mvn-${{github.run_number}}"
       JAVA_PROVIDER: 'corretto'
       JAVA_VERSION: '17'
-      RT_REPO_MVN_VIRTUAL: "springpetclinic-mvn-virtual"
+      # RT_REPO_MVN_VIRTUAL: "springpetclinic-mvn-virtual"  
       # RT_REPO_MVN_DEFAULT_LOCAL: "springpetclinic-mvn-snapshot-local"  # springpetclinic-mvn-dev-local, springpetclinic-mvn-qa-local, springpetclinic-mvn-prod-local
     runs-on: ${{matrix.os}}
     timeout-minutes: 30   # ref  https://docs.github.com/en/actions/writing-workflows/workflow-syntax-for-github-actions#jobsjob_idtimeout-minutes
@@ -849,7 +847,7 @@ jobs:
 
       - name: "RLM: RBv2 promote ${{env.RBv2_ENV_VAL}}"
         run: |
-          jf rbp ${{env.BUILD_NAME}} ${{env.BUILD_ID}} ${{env.RBv2_ENV_VAL}} --sync=true --signing-key=${{secrets.RBV2_SIGNING_KEY}}  
+          jf rbp ${{env.BUILD_NAME}} ${{env.BUILD_ID}} ${{env.RBv2_ENV_VAL}} --include-repos=${{env.RT_REPO_MVN_VIRTUAL}} --sync=true --signing-key=${{secrets.RBV2_SIGNING_KEY}}  
 
       - name: "Evidence: RBv2 state ${{env.RBv2_ENV_VAL}}"
         continue-on-error: true
@@ -882,7 +880,7 @@ jobs:
   
       - name: "RLM: RBv2 promote ${{env.RBv2_ENV_VAL}}"
         run: |
-          jf rbp ${{env.BUILD_NAME}} ${{env.BUILD_ID}} ${{env.RBv2_ENV_VAL}} --sync=true --signing-key=${{secrets.RBV2_SIGNING_KEY}}  
+          jf rbp ${{env.BUILD_NAME}} ${{env.BUILD_ID}} ${{env.RBv2_ENV_VAL}} --include-repos=${{env.RT_REPO_MVN_VIRTUAL}} --sync=true --signing-key=${{secrets.RBV2_SIGNING_KEY}}  
 
       - name: "Evidence: RBv2 state ${{env.RBv2_ENV_VAL}}"
         continue-on-error: true
@@ -915,7 +913,7 @@ jobs:
 
       - name: "RLM: RBv2 promote ${{env.RBv2_ENV_VAL}}"
         run: |
-          jf rbp ${{env.BUILD_NAME}} ${{env.BUILD_ID}} ${{env.RBv2_ENV_VAL}} --sync=true --signing-key=${{secrets.RBV2_SIGNING_KEY}}  
+          jf rbp ${{env.BUILD_NAME}} ${{env.BUILD_ID}} ${{env.RBv2_ENV_VAL}} --include-repos=${{env.RT_REPO_MVN_VIRTUAL}} --sync=true --signing-key=${{secrets.RBV2_SIGNING_KEY}}  
 
       - name: "Evidence: RBv2 state ${{env.RBv2_ENV_VAL}}"
         continue-on-error: true
