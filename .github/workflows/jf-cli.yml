@@ -840,6 +840,7 @@ jobs:
     env:
       RBv2_ENV_VAL: "DEV"
       BUILD_ID: "ga-jf-mvn-${{github.run_number}}"
+      RT_REPO_MVN_VIRTUAL: "springpetclinic-mvn-virtual"  
       RT_REPO_DEV_LOCAL: "springpetclinic-mvn-dev-local"
     defaults:
         run:
